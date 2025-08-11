@@ -1,56 +1,97 @@
 const Service = require("../services");
-const {SuccessResponse} = require('../utils/comman');
+const {SuccessResponse , ENUMS, ErrorResponse} = require('../utils/comman');
 const StatusCode = require("../utils/constants/statuscodes");
 const addUser = async(req,res) => {
-    const {name,age,email,password,role} = req.body;
-        const user = await Service.user.createUser({name,age,email,password,role})
+    console.log("inside user-controller-addUser")
+
+    try {
+          const user = await Service.User.createUser({
+            name:req.body.name,
+            age:req.body.age,
+            email:req.body.email,
+            password:req.body.password,
+            role:req.body?.role || ENUMS.USER_ROLE.USER
+        })
+
         SuccessResponse.data = user;
         return res
                   .status(StatusCode.CREATED)
                   .json(SuccessResponse)
+    } catch (error) {
+        ErrorResponse.error = error;
+        res.status(error.statusCode || StatusCode.INTERNAL_SERVER_ERROR).json(ErrorResponse)
+    }
+
+      
     
 }
 
 const getAllUsers = async (req,res) => {
-    const users  = await Service.user.getAllUsers();
+    console.log("inside user-controller-getAllUsers")
+
+      try {
+           const users  = await Service.User.getAllUsers();
     SuccessResponse.data = users;
     return res
             .status(StatusCode.SUCCESS)
             .json(SuccessResponse);
+    } catch (error) {
+        ErrorResponse.error = error;
+        res.status(error.statusCode || StatusCode.INTERNAL_SERVER_ERROR).json(ErrorResponse)
+    }
+   
 }
 
 const getUser = async(req,res)=>{
-    const {id} = req.params;
+     console.log("inside user-controller-getUser")
+        try {
+              const {id} = req.params;
     // console.log("Params :",JSON.stringify(req,null,2))
-    const user = await Service.user.getUser(id);
+    const user = await Service.User.getUser(id);
 
     SuccessResponse.data = user;
 
     return res
               .status(StatusCode.SUCCESS)
               .json(SuccessResponse)
+    } catch (error) {
+        ErrorResponse.error = error;
+        res.status(error.statusCode || StatusCode.INTERNAL_SERVER_ERROR).json(ErrorResponse)
+    }
+
 }
 
 const updateUser = async(req,res) => {
-
-    const {id} = req.params;
+ console.log("inside user-controller-updateUser")
+    try {
+              const {id} = req.params;
     const data = req.body
-    const user  = await Service.user.updateUser(id,data);
+    const user  = await Service.Userser.updateUser(id,data);
     
     SuccessResponse.data = user;
 
     return res
               .status(StatusCode.SUCCESS)
               .json(SuccessResponse);
+    } catch (error) {
+        ErrorResponse.error = error;
+        res.status(error.statusCode || StatusCode.INTERNAL_SERVER_ERROR).json(ErrorResponse)
+    }
+
 }
 
 const deleteUser = async(req,res) => {
-    
+    console.log("inside user-controller-deleteUser")
+       try {
     const { id } = req.params;
-    const response = await Service.user.deleteUser(id)
+    const response = await Service.User.deleteUser(id)
     SuccessResponse.data =  response;
-
     return res.status(StatusCode.SUCCESS).json(SuccessResponse);
+    } catch (error) {
+        ErrorResponse.error = error;
+        res.status(error.statusCode || StatusCode.INTERNAL_SERVER_ERROR).json(ErrorResponse)
+    }
+   
 
 }
 module.exports = {

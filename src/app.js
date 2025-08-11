@@ -3,7 +3,6 @@ const express = require('express');
 const cors = require('cors')
 const app = express()
 const routes = require('./routes');
-const Middleware = require('./middlewares');
 
 app.use(cors({
     origin : "*",
@@ -17,7 +16,5 @@ app.use(express.static("public"))
 // app.use(cookieParser())
 
 app.use("/api",routes)
-
-app.use(Middleware.globalError)
 
 module.exports = app

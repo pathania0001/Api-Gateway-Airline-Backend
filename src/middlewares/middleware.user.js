@@ -1,3 +1,4 @@
+const { ErrorResponse } = require("../utils/comman");
 const { ValidationError } = require("../utils/error");
 
 
@@ -11,7 +12,9 @@ const validateUserInput = (req,res,next)=>{
   if (!password) errors.push("password is required");
 
   if (errors.length > 0) {
-    return next(new ValidationError(errors));
+    const error =  new ValidationError(errors);
+    ErrorResponse.error = error;
+    return res.status(StatusCodes.BAD_REQUEST).json(ErrorResponse)
   }
   next();
 }

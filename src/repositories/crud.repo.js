@@ -8,8 +8,7 @@ const StatusCode = require('../utils/constants/statuscodes');
     }
 
     async create(data){
-             
-      const response = await this.model.create(data);
+        const response = await this.model.create(data);
              if(!response)
              throw new ApiError(`Failed to create Resource`,StatusCode.INTERNAL_SERVER_ERROR);
              return response;

@@ -1,7 +1,7 @@
 error = {
     success:false,
     message:"Something went wrong",
-    data:{},
+    data:null,
     error:{}
 }
 module.exports = error;
