@@ -16,7 +16,7 @@ class UserRepository extends CrudRepositories {
    session.startTransaction();
     try {
         const [user] = await User.create([data],{session}); // not user but [user] because user holds only data of user instance not actual instance of user which contains schema.methods and other utill functions
-        const accessToken = await user.generateAcessToken();
+        const accessToken = await user.generteAcessToken();
         const refreshToken = await user.generateRefreshToken(session); //ensuring consistant generating and storing of token in document
 
         await session.commitTransaction();
@@ -34,8 +34,6 @@ class UserRepository extends CrudRepositories {
         return response;
     } catch (error) {
       await session.abortTransaction();
-      if(error.name && error.message)
-        throw new ApiError({type:error.name,message:error.message},StatusCodes.INTERNAL_SERVER_ERROR) //this file's typo errors inside it 
         throw error;
     }
     finally{
