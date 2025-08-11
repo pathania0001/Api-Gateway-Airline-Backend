@@ -17,7 +17,7 @@ class UserRepository extends CrudRepositories {
     try {
         const [user] = await User.create([data],{session}); // not user but [user] because user holds only data of user instance not actual instance of user which contains schema.methods and other utill functions
         const accessToken = await user.generateAcessToken();
-        const refreshToken = await user.generateRefreshToken(session); 
+        const refreshToken = await user.generateRefreshToken(session); //ensuring consistant generating and storing of token in document
 
         await session.commitTransaction();
 
