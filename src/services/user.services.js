@@ -40,16 +40,12 @@ const getUser = async (id) => {
         return user;
     }
     catch(error){
-         console.log("In Services :",JSON.stringify(error,null,2));
 
          if(error instanceof ApiError){
             throw new ApiError("User Not Found",StatusCode.NOT_FOUND)
          }
-         
-          const genError = handleServiceError(error);
-
-        if (genError === null) 
-        throw new ApiError("Error fetching User ",StatusCode.INTERNAL_SERVER_ERROR)
+        
+        throw new ApiError({type:error.name,message:error.message},StatusCode.INTERNAL_SERVER_ERROR)
     }
 }
 

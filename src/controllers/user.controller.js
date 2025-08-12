@@ -7,14 +7,17 @@ const addUser = async(req,res) => {
     try {
           const user = await Service.User.createUser({
             name:req.body.name,
+            username:req.body.username,
             age:req.body.age,
             email:req.body.email,
             password:req.body.password,
             role:req.body?.role || ENUMS.USER_ROLE.USER
         })
-
+        
+        delete user.refreshToken;
+        delete user.accessToken;
         SuccessResponse.data = user;
-        return res
+            return res
                   .status(StatusCode.CREATED)
                   .json(SuccessResponse)
     } catch (error) {

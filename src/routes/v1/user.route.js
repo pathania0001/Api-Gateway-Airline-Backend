@@ -5,9 +5,9 @@ const Middleware = require('../../middlewares');
 const asyncHandler = require('../../utils/asyncHandler');
 const userRoutes = Router();
 
-userRoutes.post("/register",Middleware.User.validateUserInput,Controller.User.addUser);
+userRoutes.post("/register",Middleware.Auth.validateUserInput,Controller.User.addUser);
 
-// userRoutes.get("/",Middleware.User,Controller.User.getAllUsers)
+userRoutes.get("/",Controller.User.getAllUsers)
 
 // userRoutes.get('/:id',Middleware.User,Controller.User.getUser)
 

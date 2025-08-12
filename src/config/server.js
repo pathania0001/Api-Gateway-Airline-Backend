@@ -7,6 +7,7 @@
  const TOKEN_SECURITY_KEY = process.env.TOKEN_SECURITY_KEY;
  const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY;
  const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY;
+ const COOKIE_SIGN = process.env.COOKIE_SIGN;
 
 module.exports = {
     PORT,
@@ -15,5 +16,6 @@ module.exports = {
     FLIGHT_SERVICE,
     TOKEN_SECURITY_KEY,
     ACCESS_TOKEN_EXPIRY,
-    REFRESH_TOKEN_EXPIRY
+    REFRESH_TOKEN_EXPIRY,
+    COOKIE_SIGN
 }

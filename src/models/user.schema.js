@@ -19,7 +19,12 @@ const userSchema = new mongoose.Schema({
             message:USER_SCHEMA_ERROR.NAME_VALIDATION
         }
     },
-    
+    username:{
+        type:String,
+        trim:true,
+        required:true,
+        unique:true
+    },
    age: {
         type: Number,
         required: true,
@@ -39,6 +44,7 @@ const userSchema = new mongoose.Schema({
         required: true,
         min: 0,
         max: 10,
+        select:false,
     },
     refreshToken:{
         type:String
@@ -63,44 +69,31 @@ userSchema.pre("save",async function (next){
     return next();
 })
 
-userSchema.methods.generateAccessToken = async function () {
-    const accessToken = jwt.sign(
+const getToken = async function (user,TOKEN_SECURITY_KEY,TOKEN_EXPIRY) {
+    const Token = jwt.sign(
          {
-            id:this._id,
-            name:this.name,
-            email:this.email,
+            id:user.id,
+            name:user.name,
+            email:user.email,
             },
         TOKEN_SECURITY_KEY,
         {
-            expiresIn:ACCESS_TOKEN_EXPIRY
+            expiresIn:TOKEN_EXPIRY
            });
     
-    return accessToken;
+    return Token;
 }
 
-userSchema.methods.generateRefreshToken = async function(session){
-    const newRefreshToken = jwt.sign({
-        id:this._id,
+userSchema.methods.generateAuthTokens = async function(){
+    const userData  = {
         name:this.name,
+        id:this._id,
         email:this.email
-    },TOKEN_SECURITY_KEY,{
-        expiresIn:REFRESH_TOKEN_EXPIRY
-    })
-    
-    this.refreshToken = newRefreshToken;
-    try {
-        if(session){
-     await this.save({validateBeforeSave:true , session});
     }
-    else{
-    await this.save({validateBeforeSave:true});
-    }
-    } catch (error) {
-        throw new ApiError(["Error in generating Refresh Token"],StatusCodes.INTERNAL_SERVER_ERROR)
-    }
-   
+    const accessToken = await  getToken(userData,TOKEN_SECURITY_KEY,ACCESS_TOKEN_EXPIRY);
+    const refreshToken = await getToken(userData,TOKEN_SECURITY_KEY,REFRESH_TOKEN_EXPIRY);
 
-    return this.refreshToken;
+    return {refreshToken,accessToken};
 }
 
 
