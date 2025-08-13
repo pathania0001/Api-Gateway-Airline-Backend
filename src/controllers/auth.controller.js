@@ -81,7 +81,7 @@ const refreshAuthTokens = async(req,res)=>{
         throw new ApiError(["Doesn't find the refreshToken in oncomming Req"],StatusCodes.BAD_REQUEST)
     
        const decodedToken =  jwt.verify(refreshTokenFromReq,TOKEN_SECURITY_KEY);
-       const response =  await Service.Auth.refreshAuthTokens(decodedToken)
+       const response =  await Service.Auth.refreshAuthTokens(decodedToken,refreshTokenFromReq)
       
        SuccessResponse.data = response;
        

@@ -61,14 +61,21 @@ const signIn = async(data)=>{
       }
 }
 
-const refreshAuthTokens = async(decodedData)=>{
+const refreshAuthTokens = async(decodedData,tokenFromReq)=>{
     try {
         
         const response = await userRepository.getById({_id:decodedData.id})
         if(!response){
-            throw ApiError(["Invalid Refresh Token"],StatusCodes.BAD_REQUEST)
+            throw new ApiError(["Invalid Refresh Token"],StatusCodes.BAD_REQUEST)
         }
-        
+
+        if (!Array.isArray(response.refreshToken)) {
+         throw new ApiError(["No refresh tokens found"], StatusCodes.BAD_REQUEST);
+       }
+       
+        const isActive = response.refreshToken.some(token => token === tokenFromReq) 
+        if(!isActive)
+            throw new ApiError(["Invalid Refresh Token"],StatusCodes.BAD_REQUEST)
         const accessToken = await response.generateAccessToken();
         const user = response.toObject();
         delete user.refreshToken
