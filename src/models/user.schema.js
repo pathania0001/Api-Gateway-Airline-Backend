@@ -5,8 +5,6 @@ const jwt = require('jsonwebtoken');
 const { ACCESS_TOKEN_EXPIRY, TOKEN_SECURITY_KEY, REFRESH_TOKEN_EXPIRY } = require('../config');
 const {USER , ADMIN} = ENUMS.USER_ROLE;
 const bcrypt = require('bcrypt');
-const { ApiError } = require('../utils/error');
-const StatusCodes = require('../utils/constants/statuscodes');
 const userSchema = new mongoose.Schema({
     name: {
         type:String,
@@ -46,9 +44,10 @@ const userSchema = new mongoose.Schema({
         max: 10,
         select:false,
     },
-    refreshToken:{
-        type:String
-    },
+    refreshToken:[{
+        type:String,
+        default:[],
+    }],
     role:{
         type:String,
         enum:[USER,ADMIN],
@@ -92,7 +91,7 @@ userSchema.methods.generateAuthTokens = async function(){
     }
     const accessToken = await  getToken(userData,TOKEN_SECURITY_KEY,ACCESS_TOKEN_EXPIRY);
     const refreshToken = await getToken(userData,TOKEN_SECURITY_KEY,REFRESH_TOKEN_EXPIRY);
-
+ 
     return {refreshToken,accessToken};
 }
 

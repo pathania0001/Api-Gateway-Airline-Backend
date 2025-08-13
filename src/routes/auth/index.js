@@ -1,6 +1,6 @@
 const express = require('express');
 const Middleware = require('../../middlewares');
-
+const Controller = require('../../controllers')
 const authRoutes = express.Router();
 
 authRoutes.route('/signup')
@@ -10,4 +10,9 @@ authRoutes.route('/signup')
               )
 
 
+authRoutes.route('/login')
+              .post(
+                     Middleware.Auth.validateLoginUserInput,
+                     Controller.Auth.login
+              )
 module.exports = authRoutes;

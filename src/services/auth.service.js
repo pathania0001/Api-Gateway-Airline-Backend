@@ -1,3 +1,5 @@
+
+const { MAX_DEVICE } = require("../config");
 const { UserRepository } = require("../repositories");
 const { ApiError } = require("../utils/error");
 const handleServiceError = require("../utils/error/handleServiceError");
@@ -5,7 +7,7 @@ const handleServiceError = require("../utils/error/handleServiceError");
 const userRepository = new UserRepository;
 const singingUp = async(data) => { 
     try {
-        console.log("data receives :",data)
+        // console.log("data receives :",data)
          const user = await userRepository.createUser(data);
          return user;
          } catch (error) {
@@ -23,11 +25,42 @@ const singingUp = async(data) => {
 
 }
 
-const login = async()=>{
+const signIn = async(data)=>{
+      try {
+          
+         const users = await userRepository.get({ username: data.username });
+          const response = users[0];
 
+          if (!response) {
+               throw new ApiError("User not found", StatusCodes.NOT_FOUND);
+            }
+
+        const { accessToken, refreshToken } = await response.generateAuthTokens();
+ 
+        response.refreshToken.push(refreshToken)
+        
+        if(response.refreshToken.length > MAX_DEVICE)
+        response.refreshToken = response.refreshToken.slice(-MAX_DEVICE)
+
+         const updatedData = await  response.save({validateBeforeSave:true});
+         const user =  updatedData.toObject();
+         delete user.refreshToken;      // complete array is useless only return which is newlly created;
+          newData =  {...user,refreshToken,accessToken}
+         return newData;
+      } catch (error) {
+          if(error instanceof ApiError)
+            throw error
+        try {
+             handleServiceError(error);
+             throw new ApiError("Cannot Create new User Obeject",StatusCode.INTERNAL_SERVER_ERROR);
+        } catch (error) {
+            throw error
+        }
+      }
 }
 
 module.exports = {
     singingUp,
+    signIn,
 
 }

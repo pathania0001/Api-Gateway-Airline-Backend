@@ -14,7 +14,7 @@ const signUp = async(req,res) =>{
             password:req.body.password,
             role:req.body?.role || ENUMS.USER_ROLE.USER
         });
-        const refToken = response.refreshToken;
+        const refToken = response.refreshToken[0];
       
         delete response?.refreshToken;
       
@@ -41,10 +41,26 @@ const signUp = async(req,res) =>{
 }
 
 const login = async(req,res)=>{
-    
+
   try {
-    
-    const user = await Service.Auth.login
+    const user = await Service.Auth.signIn({
+      username:req.body.username,
+      password:req.body.paasword,
+    })
+
+    const refreshToken = user.refreshToken;
+    delete user?.refreshToken;
+    SuccessResponse.data = user;
+   console.log(refreshToken)
+    return res
+              .cookie("refreshToken",refreshToken,{
+                signed:true,
+                httpOnly:true,
+                secure:true,
+                maxAge:2*60*1000,
+              })
+              .status(StatusCodes.SUCCESS)
+              .json(SuccessResponse)
 
   } catch (error) {
      if(!(error instanceof ApiError)){  
@@ -57,4 +73,5 @@ const login = async(req,res)=>{
 }
 module.exports = {
   signUp,
+  login,
 }

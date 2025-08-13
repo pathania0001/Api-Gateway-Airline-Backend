@@ -19,8 +19,8 @@ const StatusCode = require('../utils/constants/statuscodes');
        return response;
     }
 
-    async get(id){
-      const response = await this.model.findById(id);
+    async get(condition){
+      const response = await this.model.find(condition);
       if(!response)
         throw new ApiError(`Resource not Found`,StatusCode.NOT_FOUND);
       return response;

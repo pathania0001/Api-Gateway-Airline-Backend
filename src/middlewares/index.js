@@ -1,8 +1,6 @@
 
-const { validateUserInput } = require("./auth.middlewares");
+const Auth= require("./auth.middlewares");
 
 module.exports = {
-                  Auth: {
-                      validateUserInput 
-                     }
+                  Auth,
                   };

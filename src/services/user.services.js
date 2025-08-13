@@ -34,9 +34,9 @@ const getAllUsers = async () => {
     }
 }
 
-const getUser = async (id) => {
+const getUser = async (condition) => {
     try{
-        const user = await userRepository.get(id);
+        const user = await userRepository.get(condition);
         return user;
     }
     catch(error){

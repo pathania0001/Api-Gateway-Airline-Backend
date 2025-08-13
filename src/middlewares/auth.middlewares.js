@@ -19,6 +19,22 @@ const validateUserInput = (req,res,next)=>{
   }
   next();
 }
+const validateLoginUserInput = (req,res,next)=>{
+   const  {username,password} = req.body;
+   const errors = [];
+
+  if (!username) errors.push("username is required");
+
+  if (!password) errors.push("password is required");
+
+  if (errors.length > 0) {
+    const error =  new ValidationError(errors);
+    ErrorResponse.error = error;
+    return res.status(StatusCodes.BAD_REQUEST).json(ErrorResponse)
+  }
+  next();
+}
 module.exports = {
     validateUserInput,
+    validateLoginUserInput,
 }

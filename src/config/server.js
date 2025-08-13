@@ -8,7 +8,7 @@
  const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY;
  const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY;
  const COOKIE_SIGN = process.env.COOKIE_SIGN;
-
+ const MAX_DEVICE = process.env.MAX_DEVICE;
 module.exports = {
     PORT,
     DB_NAME,
@@ -17,5 +17,6 @@ module.exports = {
     TOKEN_SECURITY_KEY,
     ACCESS_TOKEN_EXPIRY,
     REFRESH_TOKEN_EXPIRY,
-    COOKIE_SIGN
+    COOKIE_SIGN,
+    MAX_DEVICE,
 }

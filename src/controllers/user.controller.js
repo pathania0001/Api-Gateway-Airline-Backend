@@ -50,7 +50,7 @@ const getUser = async(req,res)=>{
         try {
               const {id} = req.params;
     // console.log("Params :",JSON.stringify(req,null,2))
-    const user = await Service.User.getUser(id);
+    const user = await Service.User.getUser({id});
 
     SuccessResponse.data = user;
 
