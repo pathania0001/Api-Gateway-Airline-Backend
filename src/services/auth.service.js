@@ -1,5 +1,6 @@
 
-const { MAX_DEVICE } = require("../config");
+const jwt = require("jsonwebtoken");
+const { MAX_DEVICE, TOKEN_SECURITY_KEY } = require("../config");
 const { UserRepository } = require("../repositories");
 const StatusCodes = require("../utils/constants/statuscodes");
 const { ApiError } = require("../utils/error");
@@ -29,7 +30,7 @@ const singingUp = async(data) => {
 const signIn = async(data)=>{
       try {
           
-         const users = await userRepository.get({ username: data.username });
+         const users = await userRepository.getOne({ username: data.username });
           const response = users[0];
 
           if (!response) {
@@ -50,20 +51,16 @@ const signIn = async(data)=>{
           newData =  {...user,refreshToken,accessToken}
          return newData;
       } catch (error) {
+        console.log(error)
           if(error instanceof ApiError)
             throw error
-        try {
-             handleServiceError(error);
              throw new ApiError("failed to login user",StatusCodes.INTERNAL_SERVER_ERROR);
-        } catch (error) {
-            throw error
-        }
       }
 }
 
 const refreshAuthTokens = async(decodedData,tokenFromReq)=>{
     try {
-        
+        // /console.log("inside in refreshAuthToken service")
         const response = await userRepository.getById({_id:decodedData.id})
         if(!response){
             throw new ApiError(["Invalid Refresh Token"],StatusCodes.BAD_REQUEST)
@@ -73,9 +70,10 @@ const refreshAuthTokens = async(decodedData,tokenFromReq)=>{
          throw new ApiError(["No refresh tokens found"], StatusCodes.BAD_REQUEST);
        }
        
-        const isActive = response.refreshToken.some(token => token === tokenFromReq) 
+       const updatedTokens = await deleteExpiredToken({user:response}) 
+        const isActive = updatedTokens.includes(tokenFromReq) 
         if(!isActive)
-            throw new ApiError(["Invalid Refresh Token"],StatusCodes.BAD_REQUEST)
+            throw new ApiError(["Invalid Refresh Token or might be expired.login again"],StatusCodes.BAD_REQUEST)
         const accessToken = await response.generateAccessToken();
         const user = response.toObject();
         delete user.refreshToken
@@ -83,17 +81,45 @@ const refreshAuthTokens = async(decodedData,tokenFromReq)=>{
     } catch (error) {
          if(error instanceof ApiError)
             throw error
-        try {
-             handleServiceError(error);
+
              throw new ApiError("failed to Refresh User tokens",StatusCodes.INTERNAL_SERVER_ERROR);
-        } catch (error) {
-            throw error
-        }
+       
     }
 }
 
+const deleteExpiredToken = async({userId,user})=>{
+//console.log("inside in deleteExpiredTokens")
+   let userInstance = user;
+    if(userId){
+         userInstance = await userRepository.getById(userId);
+    }
+     const updatedUserTokens = (userInstance.refreshToken || []).filter(token => {
+    try {
+        jwt.verify(token, TOKEN_SECURITY_KEY);
+        return true; // keep valid token
+    } catch (error) {
+        console.log(`Removing invalid/expired token: ${token}`);
+        return false; // remove invalid token
+    }
+})   
+    
+    userInstance.refreshToken = updatedUserTokens;
+    try {
+        await userInstance.save({ fields: ['refreshToken'] });
+    } catch (error) {
+        console.log(error)
+        throw new ApiError(["Something Went Worng during validating RefreshToken.Please try again"],StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+   console.log("updatedUserTokens:",updatedUserTokens)
+   return updatedUserTokens;
+}
+
+const logout = async()=>{
+
+}
 module.exports = {
     singingUp,
     signIn,
     refreshAuthTokens,
+    deleteExpiredToken
 }

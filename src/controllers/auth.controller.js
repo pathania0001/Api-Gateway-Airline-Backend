@@ -43,7 +43,7 @@ const signUp = async(req,res) =>{
 }
 
 const login = async(req,res)=>{
-  console.log(req.hostname)
+  
   try {
     const user = await Service.Auth.signIn({
       username:req.body.username,
@@ -76,11 +76,22 @@ const login = async(req,res)=>{
 const refreshAuthTokens = async(req,res)=>{
   try {
        const refreshTokenFromReq = req?.signedCookies?.refreshToken;
-
+       console.log("intered in controller")
        if(!refreshTokenFromReq)
         throw new ApiError(["Doesn't find the refreshToken in oncomming Req"],StatusCodes.BAD_REQUEST)
-    
-       const decodedToken =  jwt.verify(refreshTokenFromReq,TOKEN_SECURITY_KEY);
+      let decodedToken ;
+       try {
+          decodedToken =  jwt.verify(refreshTokenFromReq,TOKEN_SECURITY_KEY);  
+       } catch (error) {
+          if(error.name = "TokenExpiredError"){
+            decodedToken =  jwt.decode(refreshTokenFromReq,TOKEN_SECURITY_KEY);
+            if(decodedToken?.id){
+              await Service.Auth.deleteExpiredToken({userId:decodedToken.id})
+              throw new ApiError(["Refresh Token Expired try to login again"])
+            }
+          }
+          throw new ApiError([" Invalid Refresh Token"],StatusCodes.BAD_REQUEST)
+       }
        const response =  await Service.Auth.refreshAuthTokens(decodedToken,refreshTokenFromReq)
       
        SuccessResponse.data = response;
@@ -92,9 +103,6 @@ const refreshAuthTokens = async(req,res)=>{
   } catch (error) {
     console.error(error)
       if(!(error instanceof ApiError)){  
-         if(error.name ==="TokenExpiredError")
-         error = new ApiError([{type:"Token Expired",message:"Refresh token is expired , Now you need to login again"}],StatusCodes.INTERNAL_SERVER_ERROR)
-        else
          error = new ApiError([{type:error.name,message:error.message}],StatusCodes.INTERNAL_SERVER_ERROR)
         }
 
