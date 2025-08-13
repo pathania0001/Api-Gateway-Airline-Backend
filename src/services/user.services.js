@@ -34,9 +34,9 @@ const getAllUsers = async () => {
     }
 }
 
-const getUser = async (condition) => {
+const getUserByid = async (id) => {
     try{
-        const user = await userRepository.get(condition);
+        const user = await userRepository.get(id);
         return user;
     }
     catch(error){
@@ -91,7 +91,7 @@ const deleteUser = async(id)=>{
 module.exports = {
     createUser,
     getAllUsers,
-    getUser,
+    getUserByid,
     updateUser,
     deleteUser,
 }

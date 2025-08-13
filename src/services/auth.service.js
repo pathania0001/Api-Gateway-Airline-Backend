@@ -61,8 +61,32 @@ const signIn = async(data)=>{
       }
 }
 
+const refreshAuthTokens = async(decodedData)=>{
+    try {
+        
+        const response = await userRepository.getById({_id:decodedData.id})
+        if(!response){
+            throw ApiError(["Invalid Refresh Token"],StatusCodes.BAD_REQUEST)
+        }
+        
+        const accessToken = await response.generateAccessToken();
+        const user = response.toObject();
+        delete user.refreshToken
+        return {...user,accessToken}
+    } catch (error) {
+         if(error instanceof ApiError)
+            throw error
+        try {
+             handleServiceError(error);
+             throw new ApiError("failed to Refresh User tokens",StatusCodes.INTERNAL_SERVER_ERROR);
+        } catch (error) {
+            throw error
+        }
+    }
+}
+
 module.exports = {
     singingUp,
     signIn,
-
+    refreshAuthTokens,
 }

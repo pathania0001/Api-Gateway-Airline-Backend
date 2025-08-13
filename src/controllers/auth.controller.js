@@ -3,6 +3,8 @@ const { ErrorResponse, SuccessResponse, ENUMS } = require("../utils/comman");
 const StatusCodes = require("../utils/constants/statuscodes");
 const Service = require('../services');
 const { ApiError } = require("../utils/error");
+const jwt = require('jsonwebtoken');
+const { TOKEN_SECURITY_KEY } = require("../config");
 const signUp = async(req,res) =>{
   console.log("inside-auth-controller")
     try {
@@ -41,7 +43,7 @@ const signUp = async(req,res) =>{
 }
 
 const login = async(req,res)=>{
-
+  console.log(req.hostname)
   try {
     const user = await Service.Auth.signIn({
       username:req.body.username,
@@ -70,7 +72,39 @@ const login = async(req,res)=>{
         
   }
 }
+
+const refreshAuthTokens = async(req,res)=>{
+  try {
+       const refreshTokenFromReq = req?.signedCookies?.refreshToken;
+
+       if(!refreshTokenFromReq)
+        throw new ApiError(["Doesn't find the refreshToken in oncomming Req"],StatusCodes.BAD_REQUEST)
+    
+       const decodedToken =  jwt.verify(refreshTokenFromReq,TOKEN_SECURITY_KEY);
+       const response =  await Service.Auth.refreshAuthTokens(decodedToken)
+      
+       SuccessResponse.data = response;
+       
+       return res
+                .status(StatusCodes.SUCCESS)
+                .json(SuccessResponse);
+
+  } catch (error) {
+    console.error(error)
+      if(!(error instanceof ApiError)){  
+         if(error.name ==="TokenExpiredError")
+         error = new ApiError([{type:"Token Expired",message:"Refresh token is expired , Now you need to login again"}],StatusCodes.INTERNAL_SERVER_ERROR)
+        else
+         error = new ApiError([{type:error.name,message:error.message}],StatusCodes.INTERNAL_SERVER_ERROR)
+        }
+
+        ErrorResponse.error = error;
+        return res.status(error?.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json(ErrorResponse);
+        
+  }
+}
 module.exports = {
   signUp,
   login,
+  refreshAuthTokens,
 }

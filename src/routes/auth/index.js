@@ -17,9 +17,9 @@ authRoutes.route('/login')
           )
 
 
-// authRoutes.route('/refresh')
-//           .post(
-//               Controller.Auth.refreshAuthToken
-//           )
+authRoutes.route('/refresh')
+          .post(
+              Controller.Auth.refreshAuthTokens
+          )
               
 module.exports = authRoutes;

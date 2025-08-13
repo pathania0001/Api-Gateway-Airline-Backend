@@ -30,6 +30,8 @@ class UserRepository extends CrudRepositories {
    }
 
    }
+
+   
 }
 
 module.exports = UserRepository;

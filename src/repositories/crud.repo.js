@@ -14,13 +14,17 @@ const StatusCode = require('../utils/constants/statuscodes');
              return response;
     }
     
-    async getAll(){
-      const response = await this.model.find();
+    async getAll(condition){
+      const response = await this.model.find(condition);
+       return response;
+    }
+    async getOne(condition){
+      const response = await this.model.find(condition);
        return response;
     }
 
-    async get(condition){
-      const response = await this.model.find(condition);
+    async getById(id){
+      const response = await this.model.findById(id);
       if(!response)
         throw new ApiError(`Resource not Found`,StatusCode.NOT_FOUND);
       return response;
