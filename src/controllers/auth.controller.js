@@ -51,7 +51,6 @@ const login = async(req,res)=>{
     const refreshToken = user.refreshToken;
     delete user?.refreshToken;
     SuccessResponse.data = user;
-   console.log(refreshToken)
     return res
               .cookie("refreshToken",refreshToken,{
                 signed:true,

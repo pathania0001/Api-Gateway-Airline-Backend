@@ -1,6 +1,7 @@
 
 const { MAX_DEVICE } = require("../config");
 const { UserRepository } = require("../repositories");
+const StatusCodes = require("../utils/constants/statuscodes");
 const { ApiError } = require("../utils/error");
 const handleServiceError = require("../utils/error/handleServiceError");
 
@@ -17,7 +18,7 @@ const singingUp = async(data) => {
             throw error
         try {
              handleServiceError(error);
-             throw new ApiError("Cannot Create new User Obeject",StatusCode.INTERNAL_SERVER_ERROR);
+             throw new ApiError("failed to register user during signup",StatusCodes.INTERNAL_SERVER_ERROR);
         } catch (error) {
             throw error
         }
@@ -35,7 +36,8 @@ const signIn = async(data)=>{
                throw new ApiError("User not found", StatusCodes.NOT_FOUND);
             }
 
-        const { accessToken, refreshToken } = await response.generateAuthTokens();
+        const accessToken = await  response.generateAccessToken();
+        const refreshToken = await  response.generateRefreshToken();
  
         response.refreshToken.push(refreshToken)
         
@@ -52,7 +54,7 @@ const signIn = async(data)=>{
             throw error
         try {
              handleServiceError(error);
-             throw new ApiError("Cannot Create new User Obeject",StatusCode.INTERNAL_SERVER_ERROR);
+             throw new ApiError("failed to login user",StatusCodes.INTERNAL_SERVER_ERROR);
         } catch (error) {
             throw error
         }

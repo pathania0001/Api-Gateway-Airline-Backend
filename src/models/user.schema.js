@@ -83,16 +83,33 @@ const getToken = async function (user,TOKEN_SECURITY_KEY,TOKEN_EXPIRY) {
     return Token;
 }
 
-userSchema.methods.generateAuthTokens = async function(){
-    const userData  = {
-        name:this.name,
-        id:this._id,
-        email:this.email
-    }
-    const accessToken = await  getToken(userData,TOKEN_SECURITY_KEY,ACCESS_TOKEN_EXPIRY);
-    const refreshToken = await getToken(userData,TOKEN_SECURITY_KEY,REFRESH_TOKEN_EXPIRY);
- 
-    return {refreshToken,accessToken};
+userSchema.methods.generateAccessToken = async function(){
+       const Token = jwt.sign(
+         {
+           name:this.name,
+           id:this._id,
+          email:this.email
+            },
+        TOKEN_SECURITY_KEY,
+        {
+            expiresIn:ACCESS_TOKEN_EXPIRY
+           });
+    
+    return Token;
+}
+userSchema.methods.generateRefreshToken = async function(){
+       const Token = jwt.sign(
+         {
+           name:this.name,
+           id:this._id,
+          email:this.email
+            },
+        TOKEN_SECURITY_KEY,
+        {
+            expiresIn:REFRESH_TOKEN_EXPIRY
+           });
+    
+    return Token;
 }
 
 

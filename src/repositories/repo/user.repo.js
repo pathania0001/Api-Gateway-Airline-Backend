@@ -14,7 +14,8 @@ class UserRepository extends CrudRepositories {
    try {
       console.log("ok")
       const newUser  = new User(data);
-     const {accessToken,refreshToken} = await  newUser.generateAuthTokens();
+     const accessToken = await  newUser.generateAccessToken();
+     const refreshToken = await  newUser.generateRefreshToken();
        newUser.refreshToken.push(refreshToken);
       const response = await newUser.save({validateBeforeSave:true,session});
       const user = response.toObject();

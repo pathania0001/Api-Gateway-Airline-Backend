@@ -4,15 +4,22 @@ const Controller = require('../../controllers')
 const authRoutes = express.Router();
 
 authRoutes.route('/signup')
-              .post( 
-                     Middleware.Auth.validateUserInput,
-                     Controller.Auth.signUp,
-              )
+          .post( 
+               Middleware.Auth.validateUserInput,
+               Controller.Auth.signUp,
+          )
 
 
 authRoutes.route('/login')
-              .post(
-                     Middleware.Auth.validateLoginUserInput,
-                     Controller.Auth.login
-              )
+          .post(
+               Middleware.Auth.validateLoginUserInput,
+               Controller.Auth.login
+          )
+
+
+// authRoutes.route('/refresh')
+//           .post(
+//               Controller.Auth.refreshAuthToken
+//           )
+              
 module.exports = authRoutes;
