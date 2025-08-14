@@ -2,15 +2,16 @@
 const jwt = require("jsonwebtoken");
 const { MAX_DEVICE, TOKEN_SECURITY_KEY } = require("../config");
 const { UserRepository } = require("../repositories");
-const StatusCodes = require("../utils/constants/statuscodes");
 const { ApiError } = require("../utils/error");
 const handleServiceError = require("../utils/error/handleServiceError");
-
+const { StatusCodes } = require("../utils/constants");
+const {getUserById, createUser} = require('./user.services');
+const { invalidToken } = require("../utils/comman/commanErrors");
 const userRepository = new UserRepository;
 const singingUp = async(data) => { 
     try {
         // console.log("data receives :",data)
-         const user = await userRepository.createUser(data);
+         const user = await createUser(data);
          return user;
          } catch (error) {
            // console.log("for programm error or non-db error",error)
@@ -49,7 +50,8 @@ const signIn = async(data)=>{
 
          const updatedData = await  responseUser.save({validateBeforeSave:true});
          const user =  updatedData.toObject();
-         delete user.refreshToken;      // complete array is useless only return which is newlly created;
+         delete user.refreshToken; 
+         delete user.password;     // complete array is useless only return which is newlly created;
           newData =  {...user,refreshToken,accessToken}
          return newData;
       } catch (error) {
@@ -62,28 +64,39 @@ const signIn = async(data)=>{
 
 const refreshAuthTokens = async(decodedData,tokenFromReq)=>{
     try {
-        // /console.log("inside in refreshAuthToken service")
-        const response = await userRepository.getById({_id:decodedData.id})
+        console.log("inside in refreshAuthToken service")
+        const response = await getUserById(decodedData.id)
         if(!response){
-            throw new ApiError(["Invalid Refresh Token"],StatusCodes.BAD_REQUEST)
+           const error = invalidToken();
+           throw error;
         }
 
         if (!Array.isArray(response.refreshToken)) {
-         throw new ApiError(["No refresh tokens found"], StatusCodes.BAD_REQUEST);
+            const error = invalidToken();
+           throw error;
+        }
+        let updatedTokens
+       try {
+          updatedTokens = await deleteExpiredToken({user:response}) 
+       } catch (error) {
+        throw error
        }
-       
-       const updatedTokens = await deleteExpiredToken({user:response}) 
+
         const isActive = updatedTokens.includes(tokenFromReq) 
-        if(!isActive)
-            throw new ApiError({type:"invalidError",message:"Invalid Refresh Token or Expired .Please Try to login again"},StatusCodes.BAD_REQUEST)
+        if(!isActive){
+         const error = invalidToken();
+           throw error;
+        }
         const accessToken = await response.generateAccessToken();
         const user = response.toObject();
         delete user.refreshToken
         return {...user,accessToken}
     } catch (error) {
+
          if(error instanceof ApiError)
             throw error
-             throw new ApiError(["failed to Refresh User tokens"],StatusCodes.INTERNAL_SERVER_ERROR);
+
+        throw new ApiError({type:error.name,message:error.message},StatusCodes.INTERNAL_SERVER_ERROR);
        
     }
 }

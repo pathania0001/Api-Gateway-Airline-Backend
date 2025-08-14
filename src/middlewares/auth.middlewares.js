@@ -1,19 +1,18 @@
 const jwt = require('jsonwebtoken');
-const { ErrorResponse } = require("../utils/comman");
+const { ErrorResponse, ENUMS } = require("../utils/comman");
 const { ValidationError, ApiError } = require("../utils/error");
 const { TOKEN_SECURITY_KEY } = require("../config");
-const StatusCodes = require("../utils/constants/statuscodes");
-const Service = require("../services")
+const Service = require("../services");
+const { User_Required_Fields, StatusCodes } = require('../utils/constants');
 
 const validateUserInput = (req,res,next)=>{
-   const  {name,username,age,email,password} = req.body;
+  const data = req.body;
    const errors = [];
-
-  if (!name) errors.push("name is required");
-  if (!username) errors.push("username is required");
-  if (!age) errors.push("age is required");
-  if (!email) errors.push("email is required");
-  if (!password) errors.push("password is required");
+    User_Required_Fields.forEach( field =>{
+               if (data[field] === undefined || data[field] === null || data[field] === '') {
+                errors.push(`${field} field is required and not present in oncoming request`);
+              }
+          }) 
 
   if (errors.length > 0) {
     const error =  new ValidationError(errors);
@@ -47,7 +46,6 @@ const isUserAuthenticated = async(req,res,next)=>{
     throw new ApiError(["Access-Token not found"],StatusCodes.UNAUTHORIZED)
    }
 
-
 let decoded;
     try {
       decoded = jwt.verify(accessToken,TOKEN_SECURITY_KEY);
@@ -64,14 +62,18 @@ let decoded;
     }
 
     const user = await Service.User.getUserById(decoded.id);
-    console.log("user :",user)
+    
     if (!user) {
       throw new ApiError(["User not found"], StatusCodes.NOT_FOUND);
     }
-
+    
+    req.user = {
+    id:user.id,
+    email:user.email,
+    role:user.role
+  }
 
   } catch (error) {
-    console.log(error)
     if(error.name === "TokenExpiredError"){
          error = new ApiError(["Access  Token is expired"],StatusCodes.UNAUTHORIZED) 
       }
@@ -86,12 +88,32 @@ let decoded;
 
    //console.log("accessToken :",accessToken);
  
-  
-
    next();
 } 
+
+const isAdmin = async (req,res,next)=>{
+  try {
+    if(!req?.user?.id || ! req?.user?.role){
+      throw new ApiError(["Credentials are not valid or Invalid Token"],StatusCodes.UNAUTHORIZED)
+    }
+
+    if(req.user.role !== ENUMS.USER_ROLE.ADMIN)
+      throw new ApiError(["Acccess Denied : Admin only"],StatusCodes.FORBIDDEN);
+
+  } catch (error) {
+    if(!(error instanceof ApiError))
+      error = new ApiError({type:error.name,message:error.message},StatusCodes.INTERNAL_SERVER_ERROR)
+    ErrorResponse.error = error;
+    return res
+             .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+             .json(ErrorResponse)
+  }
+
+  next();
+}
 module.exports = {
     validateUserInput,
     validateLoginUserInput,
     isUserAuthenticated,
+    isAdmin,
 }

@@ -1,5 +1,5 @@
+const { StatusCodes } = require("../constants/");
 const { ApiError, ValidationError } = require("./index.js");
-const StatusCode = require("../constants/statuscodes");
 
 const handleServiceError = (error) => {
   
@@ -12,16 +12,16 @@ const handleServiceError = (error) => {
   }
 
     else if( error.name === "TypeError")
-              throw new ApiError({type:"TypeError",message:error.message},StatusCode.INTERNAL_SERVER_ERROR)
+              throw new ApiError({type:"TypeError",message:error.message},StatusCodes.INTERNAL_SERVER_ERROR)
              
     else if (error.code === 11000) {
     const duplicateField = Object.keys(error.keyPattern)[0];
-    throw new ApiError(`Duplicate value for unique field: ${duplicateField}`,StatusCode.CONFLICT);
+    throw new ApiError(`Duplicate value for unique field: ${duplicateField}`,StatusCodes.CONFLICT);
 }
 
 
    else if (error.name === "CastError") {
-    throw new ApiError(`Invalid key or value in data passed : ${error.path}`, StatusCode.BAD_REQUEST);
+    throw new ApiError(`Invalid key or value in data passed : ${error.path}`, StatusCodes.BAD_REQUEST);
   }
 
    return;

@@ -20,6 +20,7 @@ class UserRepository extends CrudRepositories {
       const user = response.toObject();
       await session.commitTransaction();
       //  console.log(user)
+      delete user.password;
      return  { ...user,accessToken}
    } catch (error) {
       await session.abortTransaction();

@@ -1,6 +1,8 @@
 const Service = require("../services");
 const {SuccessResponse , ENUMS, ErrorResponse} = require('../utils/comman');
-const StatusCode = require("../utils/constants/statuscodes");
+const { StatusCodes, User_Updatable_Fields } = require("../utils/constants");
+const { ApiError } = require("../utils/error");
+
 const addUser = async(req,res) => {
     console.log("inside user-controller-addUser")
 
@@ -18,11 +20,11 @@ const addUser = async(req,res) => {
         delete user.accessToken;
         SuccessResponse.data = user;
             return res
-                  .status(StatusCode.CREATED)
+                  .status(StatusCodes.CREATED)
                   .json(SuccessResponse)
     } catch (error) {
         ErrorResponse.error = error;
-        res.status(error.statusCode || StatusCode.INTERNAL_SERVER_ERROR).json(ErrorResponse)
+        res.status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json(ErrorResponse)
     }
 
       
@@ -36,11 +38,11 @@ const getAllUsers = async (req,res) => {
            const users  = await Service.User.getAllUsers();
     SuccessResponse.data = users;
     return res
-            .status(StatusCode.SUCCESS)
+            .status(StatusCodes.SUCCESS)
             .json(SuccessResponse);
     } catch (error) {
         ErrorResponse.error = error;
-        res.status(error.statusCode || StatusCode.INTERNAL_SERVER_ERROR).json(ErrorResponse)
+        res.status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json(ErrorResponse)
     }
    
 }
@@ -55,11 +57,11 @@ const getUser = async(req,res)=>{
     SuccessResponse.data = user;
 
     return res
-              .status(StatusCode.SUCCESS)
+              .status(StatusCodes.SUCCESS)
               .json(SuccessResponse)
     } catch (error) {
         ErrorResponse.error = error;
-        res.status(error.statusCode || StatusCode.INTERNAL_SERVER_ERROR).json(ErrorResponse)
+        res.status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json(ErrorResponse)
     }
 
 }
@@ -67,19 +69,32 @@ const getUser = async(req,res)=>{
 const updateUser = async(req,res) => {
  console.log("inside user-controller-updateUser")
     try {
-              const {id} = req.params;
+     const {id} = req.params;
     const data = req.body
-    const user  = await Service.Userser.updateUser(id,data);
-    
+      const dataToUpdate = {};
+      const fieldsToUpdate = Object.keys(data);
+          User_Updatable_Fields.forEach( field =>{
+               if (fieldsToUpdate.includes(field)) {
+                dataToUpdate[field] = data[field];
+              }
+          }) 
+    const user  = await Service.User.updateUser(id,dataToUpdate);
+    console.log(user)
     SuccessResponse.data = user;
 
     return res
-              .status(StatusCode.SUCCESS)
+              .status(StatusCodes.SUCCESS)
               .json(SuccessResponse);
     } catch (error) {
-        ErrorResponse.error = error;
-        res.status(error.statusCode || StatusCode.INTERNAL_SERVER_ERROR).json(ErrorResponse)
-    }
+     console.error(error)
+    if(!(error instanceof ApiError))
+      error = new ApiError({type:error.name,message:error.message},StatusCodes.INTERNAL_SERVER_ERROR);
+   
+    ErrorResponse.error = error;
+    return res
+             .status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR)
+             .json(error);
+  }
 
 }
 
@@ -89,10 +104,10 @@ const deleteUser = async(req,res) => {
     const { id } = req.params;
     const response = await Service.User.deleteUser(id)
     SuccessResponse.data =  response;
-    return res.status(StatusCode.SUCCESS).json(SuccessResponse);
+    return res.status(StatusCodes.SUCCESS).json(SuccessResponse);
     } catch (error) {
         ErrorResponse.error = error;
-        res.status(error.statusCode || StatusCode.INTERNAL_SERVER_ERROR).json(ErrorResponse)
+        res.status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json(ErrorResponse)
     }
    
 

@@ -1,10 +1,11 @@
 
 const { ErrorResponse, SuccessResponse, ENUMS } = require("../utils/comman");
-const StatusCodes = require("../utils/constants/statuscodes");
+const {StatusCodes} = require("../utils/constants");
 const Service = require('../services');
 const { ApiError } = require("../utils/error");
 const jwt = require('jsonwebtoken');
 const { TOKEN_SECURITY_KEY } = require("../config");
+const { invalidToken, expiredToken } = require("../utils/comman/commanErrors");
 const signUp = async(req,res) =>{
   console.log("inside-auth-controller")
     try {
@@ -14,7 +15,7 @@ const signUp = async(req,res) =>{
             age:req.body.age,
             email:req.body.email,
             password:req.body.password,
-            role:req.body?.role || ENUMS.USER_ROLE.USER
+            role:ENUMS.USER_ROLE.USER
         });
         const refToken = response.refreshToken[0];
         const  accessToken = response.accessToken;
@@ -26,7 +27,7 @@ const signUp = async(req,res) =>{
                     httpOnly:true,
                     secure:true,
                     signed:true,
-                    maxAge:2*60 *1000
+                    maxAge:24*60*60 *1000
                   })
                   .setHeader("Authorization",`${accessToken}`)
                   .status(StatusCodes.CREATED)
@@ -53,13 +54,14 @@ const login = async(req,res)=>{
     const refreshToken = user.refreshToken;
     const  accessToken = user.accessToken;
     delete user?.refreshToken;
+   
     SuccessResponse.data = user;
     return res
               .cookie("refreshToken",refreshToken,{
                 signed:true,
                 httpOnly:true,
                 secure:true,
-                maxAge:2*60*1000,
+                maxAge:24*60*60*1000,
               })
               .setHeader("Authorization",`${accessToken}`)
               .status(StatusCodes.SUCCESS)
@@ -78,7 +80,7 @@ const login = async(req,res)=>{
 const refreshAuthTokens = async(req,res)=>{
   try {
        const refreshTokenFromReq = req?.signedCookies?.refreshToken;
-       console.log("intered in controller")
+       console.log("inside refresh-Token controller")
        if(!refreshTokenFromReq)
         throw new ApiError(["Doesn't find the refreshToken in oncomming Req"],StatusCodes.UNAUTHORIZED)
       let decodedToken ;
@@ -89,11 +91,12 @@ const refreshAuthTokens = async(req,res)=>{
             decodedToken =  jwt.decode(refreshTokenFromReq,TOKEN_SECURITY_KEY);
             if(decodedToken?.id){
               await Service.Auth.deleteExpiredToken({userId:decodedToken.id})
-              throw new ApiError({type:"invalidError",message:"Expired Refresh Token"},StatusCodes.UNAUTHORIZED)
+              throw expiredToken();
             }
           }
-          throw new ApiError({type:"invalidError",message:"Invalid Refresh Token"},StatusCodes.UNAUTHORIZED)
+          throw invalidToken();
        }
+       console.log("decodedToken :",decodedToken)
        const response =  await Service.Auth.refreshAuthTokens(decodedToken,refreshTokenFromReq)
       
        SuccessResponse.data = response;

@@ -1,6 +1,7 @@
 
+const { StatusCodes } = require('../utils/constants');
 const { ApiError } = require('../utils/error')
-const StatusCode = require('../utils/constants/statuscodes');
+
 
   class CrudRepositories {
     constructor(model){
@@ -10,7 +11,7 @@ const StatusCode = require('../utils/constants/statuscodes');
     async create(data){
         const response = await this.model.create(data);
              if(!response)
-             throw new ApiError(`Failed to create Resource`,StatusCode.INTERNAL_SERVER_ERROR);
+             throw new ApiError(`Failed to create Resource`,StatusCodes.INTERNAL_SERVER_ERROR);
              return response;
     }
     
@@ -26,7 +27,7 @@ const StatusCode = require('../utils/constants/statuscodes');
     async get(id){
       const response = await this.model.findById(id);
       if(!response)
-        throw new ApiError(`Resource not Found`,StatusCode.NOT_FOUND);
+        throw new ApiError(`Resource not Found`,StatusCodes.NOT_FOUND);
       return response;
     }
 
@@ -39,7 +40,7 @@ const StatusCode = require('../utils/constants/statuscodes');
       })
 
       if(!response){
-        throw new ApiError(`Failed to update Resource`,StatusCode.INTERNAL_SERVER_ERROR);
+        throw new ApiError(`Failed to update Resource`,StatusCodes.INTERNAL_SERVER_ERROR);
       }
 
       return response;
@@ -52,7 +53,7 @@ const StatusCode = require('../utils/constants/statuscodes');
       const response = await this.model.findByIdAndDelete(id);
       
       if(!response)
-        throw new ApiError(`Failed to delete Resource`,StatusCode.INTERNAL_SERVER_ERROR);
+        throw new ApiError(`Failed to delete Resource`,StatusCodes.INTERNAL_SERVER_ERROR);
 
       return response;
     }
