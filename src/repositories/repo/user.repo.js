@@ -12,7 +12,6 @@ class UserRepository extends CrudRepositories {
    const session = await mongoose.startSession();
       session.startTransaction();
    try {
-      console.log("ok")
       const newUser  = new User(data);
      const accessToken = await  newUser.generateAccessToken();
      const refreshToken = await  newUser.generateRefreshToken();
@@ -30,8 +29,10 @@ class UserRepository extends CrudRepositories {
    }
 
    }
-
    
+   async findOne(condition) {
+      return await User.findOne(condition).select("+password") 
+   }
 }
 
 module.exports = UserRepository;

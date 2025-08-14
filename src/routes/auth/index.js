@@ -11,7 +11,7 @@ authRoutes.route('/signup')
 
 
 authRoutes.route('/login')
-          .post(
+          .post(Middleware.Auth.isUserAuthenticated,
                Middleware.Auth.validateLoginUserInput,
                Controller.Auth.login
           )

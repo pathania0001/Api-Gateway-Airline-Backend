@@ -17,7 +17,7 @@ const signUp = async(req,res) =>{
             role:req.body?.role || ENUMS.USER_ROLE.USER
         });
         const refToken = response.refreshToken[0];
-      
+        const  accessToken = response.accessToken;
         delete response?.refreshToken;
       
         SuccessResponse.data =  response;
@@ -28,6 +28,7 @@ const signUp = async(req,res) =>{
                     signed:true,
                     maxAge:2*60 *1000
                   })
+                  .setHeader("Authorization",`${accessToken}`)
                   .status(StatusCodes.CREATED)
                   .json(SuccessResponse)
 
@@ -43,14 +44,14 @@ const signUp = async(req,res) =>{
 }
 
 const login = async(req,res)=>{
-  
   try {
     const user = await Service.Auth.signIn({
       username:req.body.username,
-      password:req.body.paasword,
+      password:req.body.password,
     })
 
     const refreshToken = user.refreshToken;
+    const  accessToken = user.accessToken;
     delete user?.refreshToken;
     SuccessResponse.data = user;
     return res
@@ -60,6 +61,7 @@ const login = async(req,res)=>{
                 secure:true,
                 maxAge:2*60*1000,
               })
+              .setHeader("Authorization",`${accessToken}`)
               .status(StatusCodes.SUCCESS)
               .json(SuccessResponse)
 
@@ -78,7 +80,7 @@ const refreshAuthTokens = async(req,res)=>{
        const refreshTokenFromReq = req?.signedCookies?.refreshToken;
        console.log("intered in controller")
        if(!refreshTokenFromReq)
-        throw new ApiError(["Doesn't find the refreshToken in oncomming Req"],StatusCodes.BAD_REQUEST)
+        throw new ApiError(["Doesn't find the refreshToken in oncomming Req"],StatusCodes.UNAUTHORIZED)
       let decodedToken ;
        try {
           decodedToken =  jwt.verify(refreshTokenFromReq,TOKEN_SECURITY_KEY);  
@@ -87,10 +89,10 @@ const refreshAuthTokens = async(req,res)=>{
             decodedToken =  jwt.decode(refreshTokenFromReq,TOKEN_SECURITY_KEY);
             if(decodedToken?.id){
               await Service.Auth.deleteExpiredToken({userId:decodedToken.id})
-              throw new ApiError({type:"invalidError",message:"Expired Refresh Token"},StatusCodes.BAD_REQUEST)
+              throw new ApiError({type:"invalidError",message:"Expired Refresh Token"},StatusCodes.UNAUTHORIZED)
             }
           }
-          throw new ApiError({type:"invalidError",message:"Invalid Refresh Token"},StatusCodes.BAD_REQUEST)
+          throw new ApiError({type:"invalidError",message:"Invalid Refresh Token"},StatusCodes.UNAUTHORIZED)
        }
        const response =  await Service.Auth.refreshAuthTokens(decodedToken,refreshTokenFromReq)
       

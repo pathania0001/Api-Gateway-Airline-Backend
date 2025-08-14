@@ -34,7 +34,7 @@ const getAllUsers = async () => {
     }
 }
 
-const getUserByid = async (id) => {
+const getUserById = async (id) => {
     try{
         const user = await userRepository.get(id);
         return user;
@@ -91,7 +91,7 @@ const deleteUser = async(id)=>{
 module.exports = {
     createUser,
     getAllUsers,
-    getUserByid,
+    getUserById,
     updateUser,
     deleteUser,
 }

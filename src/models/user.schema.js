@@ -68,19 +68,8 @@ userSchema.pre("save",async function (next){
     return next();
 })
 
-const getToken = async function (user,TOKEN_SECURITY_KEY,TOKEN_EXPIRY) {
-    const Token = jwt.sign(
-         {
-            id:user.id,
-            name:user.name,
-            email:user.email,
-            },
-        TOKEN_SECURITY_KEY,
-        {
-            expiresIn:TOKEN_EXPIRY
-           });
-    
-    return Token;
+userSchema.methods.verifyPassword = async function(password){
+       return await bcrypt.compare(password,this.password)
 }
 
 userSchema.methods.generateAccessToken = async function(){

@@ -29,23 +29,25 @@ const singingUp = async(data) => {
 
 const signIn = async(data)=>{
       try {
-          
-         const users = await userRepository.getOne({ username: data.username });
-          const response = users[0];
 
-          if (!response) {
+         const responseUser = await userRepository.findOne({ username: data.username })
+        
+          if (!responseUser) {
                throw new ApiError("User not found", StatusCodes.NOT_FOUND);
             }
+        const isPasswordMatch = await responseUser.verifyPassword(data.password);
+        if(!isPasswordMatch)
+            throw new ApiError(["Incorrect Password.Pleasee enter correct password"],StatusCodes.UNAUTHORIZED);
 
-        const accessToken = await  response.generateAccessToken();
-        const refreshToken = await  response.generateRefreshToken();
+        const accessToken = await  responseUser.generateAccessToken();
+        const refreshToken = await  responseUser.generateRefreshToken();
  
-        response.refreshToken.push(refreshToken)
+        responseUser.refreshToken.push(refreshToken)
         
-        if(response.refreshToken.length > MAX_DEVICE)
-        response.refreshToken = response.refreshToken.slice(-MAX_DEVICE)
+        if(responseUser.refreshToken.length > MAX_DEVICE)
+        responseUser.refreshToken = responseUser.refreshToken.slice(-MAX_DEVICE)
 
-         const updatedData = await  response.save({validateBeforeSave:true});
+         const updatedData = await  responseUser.save({validateBeforeSave:true});
          const user =  updatedData.toObject();
          delete user.refreshToken;      // complete array is useless only return which is newlly created;
           newData =  {...user,refreshToken,accessToken}
