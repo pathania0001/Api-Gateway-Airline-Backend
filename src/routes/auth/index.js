@@ -21,5 +21,10 @@ authRoutes.route('/refresh')
           .post(
               Controller.Auth.refreshAuthTokens
           )
-              
+    
+authRoutes.route('/logout')
+          .post(
+               Middleware.Auth.isUserAuthenticated,
+               Controller.Auth.logout
+          )
 module.exports = authRoutes;

@@ -123,8 +123,22 @@ const refreshAuthTokens = async(req,res)=>{
         
   }
 }
+
+const logout = async(req,res)=>{
+  console.log("insied-logout-controller")
+  res.clearCookie("refreshToken",{
+    signed:true,
+    httpOnly:true,
+    secure:true
+  })
+
+  SuccessResponse.message = "SuccesFully Logout"
+  SuccessResponse.data = null;
+  return res.status(StatusCodes.SUCCESS).json(SuccessResponse);
+}
 module.exports = {
   signUp,
   login,
   refreshAuthTokens,
+  logout
 }

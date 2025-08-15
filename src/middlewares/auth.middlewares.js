@@ -46,6 +46,15 @@ const isUserAuthenticated = async(req,res,next)=>{
     throw new ApiError(["Access-Token not found"],StatusCodes.UNAUTHORIZED)
    }
 
+   const {refreshToken} = req.signedCookies;
+
+   if(!refreshToken){
+      throw new ApiError(["Refresh Token not Found"],StatusCodes.UNAUTHORIZED)
+   }
+
+   console.log("refreshToken :",refreshToken)
+   
+
 let decoded;
     try {
       decoded = jwt.verify(accessToken,TOKEN_SECURITY_KEY);
@@ -60,13 +69,24 @@ let decoded;
     if (!decoded?.id) {
       throw new ApiError(["Invalid token payload"], StatusCodes.UNAUTHORIZED);
     }
+    console.log(decoded)
 
     const user = await Service.User.getUserById(decoded.id);
-    
+    console.log(user)
     if (!user) {
       throw new ApiError(["User not found"], StatusCodes.NOT_FOUND);
     }
     
+   const isValidRefreshToken = user.refreshToken.includes(refreshToken);
+
+   if(!isValidRefreshToken){
+    res.clearCookie("refreshToken",{
+    signed:true,
+    httpOnly:true,
+    secure:true
+  })
+    throw new ApiError(["Invalide Refresh Token"],StatusCodes.UNAUTHORIZED)
+   }
     req.user = {
     id:user.id,
     email:user.email,
@@ -78,7 +98,7 @@ let decoded;
          error = new ApiError(["Access  Token is expired"],StatusCodes.UNAUTHORIZED) 
       }
     if(!(error instanceof ApiError))
-      error = new ApiError(["Failed to Authenticate user req"],StatusCodes.INTERNAL_SERVER_ERROR);
+      error = new ApiError({type:error.name,message:error.message},StatusCodes.INTERNAL_SERVER_ERROR);
    
     ErrorResponse.error = error;
     return res

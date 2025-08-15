@@ -17,7 +17,6 @@ const userRoutes = Router();
 
 userRoutes.patch('/:id',
     Middleware.Auth.isUserAuthenticated,
-    Middleware.Auth.isAdmin,
     Middleware.User.validateUpdateUserRequest,
     Controller.User.updateUser)
 

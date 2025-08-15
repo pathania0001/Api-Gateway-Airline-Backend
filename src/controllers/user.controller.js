@@ -1,5 +1,6 @@
 const Service = require("../services");
 const {SuccessResponse , ENUMS, ErrorResponse} = require('../utils/comman');
+const { USER_ROLE } = require("../utils/comman/enum");
 const { StatusCodes, User_Updatable_Fields } = require("../utils/constants");
 const { ApiError } = require("../utils/error");
 
@@ -71,10 +72,15 @@ const updateUser = async(req,res) => {
     try {
      const {id} = req.params;
     const data = req.body
-      const dataToUpdate = {};
+    const {role} = req.user;
+    if(role !== USER_ROLE.ADMIN && data?.role){        
+        // delete data.role;                  
+        throw new ApiError(["Request Denied : Only Admin can make change on specific fields(like :[role])"])
+    }
+        const dataToUpdate = {};
       const fieldsToUpdate = Object.keys(data);
           User_Updatable_Fields.forEach( field =>{
-               if (fieldsToUpdate.includes(field)) {
+               if(fieldsToUpdate.includes(field)) {
                 dataToUpdate[field] = data[field];
               }
           }) 
