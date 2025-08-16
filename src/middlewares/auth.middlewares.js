@@ -89,12 +89,10 @@ let decoded;
   })
     throw new ApiError(["Invalide Refresh Token"],StatusCodes.UNAUTHORIZED)
    }
-    req.user = {
-    id:user.id,
-    email:user.email,
-    role:user.role
-  }
 
+   req.headers["x-user-id"] = user.id;
+   req.headers['x-user-role'] = user.role;
+   
   } catch (error) {
     if(error.name === "TokenExpiredError"){
          error = new ApiError(["Access  Token is expired"],StatusCodes.UNAUTHORIZED) 
@@ -115,11 +113,11 @@ let decoded;
 
 const isAdmin = async (req,res,next)=>{
   try {
-    if(!req?.user?.id || ! req?.user?.role){
+    if(!req.headers["x-user-id"] || ! req.headers["x-user-role"]){
       throw new ApiError(["Credentials are not valid or Invalid Token"],StatusCodes.UNAUTHORIZED)
     }
 
-    if(req.user.role !== ENUMS.USER_ROLE.ADMIN)
+    if( req.headers["x-user-role"]!== ENUMS.USER_ROLE.ADMIN)
       throw new ApiError(["Acccess Denied : Admin only"],StatusCodes.FORBIDDEN);
 
   } catch (error) {
