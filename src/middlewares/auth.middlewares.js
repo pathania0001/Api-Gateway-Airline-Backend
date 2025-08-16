@@ -73,8 +73,8 @@ let decoded;
     }
     //console.log(decoded)
 
-    //const user = await Service.User.getUserById(decoded.id);
-    console.log(user)
+    const user = await Service.User.getUserById(decoded.id);
+    // console.log(user)
     if (!user) {
       throw new ApiError(["User not found"], StatusCodes.NOT_FOUND);
     }
