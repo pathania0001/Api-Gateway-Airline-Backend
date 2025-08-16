@@ -42,7 +42,7 @@ const isUserAuthenticated = async(req,res,next)=>{
           throw new ApiError(["Access-Token not found"],StatusCodes.UNAUTHORIZED)
     }
    const accessToken = req.headers.authorization.split("Bearer ").slice(-1).join("")
-   console.log("accessToken :",accessToken)
+   //console.log("accessToken :",accessToken)
      if(!accessToken)
    {
     throw new ApiError(["Access-Token not found"],StatusCodes.UNAUTHORIZED)
@@ -54,7 +54,7 @@ const isUserAuthenticated = async(req,res,next)=>{
       throw new ApiError(["Refresh Token not Found"],StatusCodes.UNAUTHORIZED)
    }
 
-   console.log("refreshToken :",refreshToken)
+   //console.log("refreshToken :",refreshToken)
    
 
 let decoded;
@@ -71,9 +71,9 @@ let decoded;
     if (!decoded?.id) {
       throw new ApiError(["Invalid token payload"], StatusCodes.UNAUTHORIZED);
     }
-    console.log(decoded)
+    //console.log(decoded)
 
-    const user = await Service.User.getUserById(decoded.id);
+    //const user = await Service.User.getUserById(decoded.id);
     console.log(user)
     if (!user) {
       throw new ApiError(["User not found"], StatusCodes.NOT_FOUND);

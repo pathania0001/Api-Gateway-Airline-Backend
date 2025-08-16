@@ -28,8 +28,9 @@ app.use(express.static("public"))
 
 app.use(
   '/flightsServices',
+   Middleware.Auth.isUserAuthenticated,
   createProxyMiddleware({
-    target: 'http://localhost:8001',
+    target:FLIGHT_SERVICE,
     changeOrigin: true,
     pathRewrite: { [`^/flightsServices`]: ''}
   })
