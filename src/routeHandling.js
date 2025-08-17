@@ -12,7 +12,7 @@ const public_routes = [
   },
 ];
 
-const proetected_routes = [
+const protected_routes = [
   {
     route:'/flightsServices',
     target:FLIGHT_SERVICE,
@@ -33,14 +33,25 @@ public_routes.forEach( proxy =>{
   }))
 });
 
-proetected_routes.forEach( proxy =>{
+protected_routes.forEach( proxy =>{
   app.use(
    `${proxy.route}`,
    Middleware.Auth.isUserAuthenticated,
   createProxyMiddleware({
     target:proxy.target,
     changeOrigin: true,
-    pathRewrite: { [`^${proxy.route}`]: ''}
+    pathRewrite: { [`^${proxy.route}`]: ''},
+     on: {
+            proxyReq: (proxyReq, req, res) => {
+                if (req.method === 'POST' && req.body) {
+                    const bodyData = JSON.stringify(req.body);
+                    // In case of a POST request, update the content-length header
+                    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+                    // Write the body data to the proxy request
+                    proxyReq.write(bodyData);
+                }
+            },
+          }
   }))
 });
 
