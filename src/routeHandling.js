@@ -43,8 +43,9 @@ protected_routes.forEach( proxy =>{
     pathRewrite: { [`^${proxy.route}`]: ''},
      on: {
             proxyReq: (proxyReq, req, res) => {
-                if (req.method === 'POST' && req.body) {
+                if ((req.method === 'POST' || req.method === 'PATCH') && req.body) {
                     const bodyData = JSON.stringify(req.body);
+                    console.log("inside proxy",bodyData)
                     // In case of a POST request, update the content-length header
                     proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
                     // Write the body data to the proxy request

@@ -80,7 +80,7 @@ let decoded;
     }
     
    const isValidRefreshToken = user.refreshToken.includes(refreshToken);
-
+   console.log("inside Auth middleware")
    if(!isValidRefreshToken){
     res.clearCookie("refreshToken",{
     signed:true,
@@ -107,7 +107,7 @@ let decoded;
   }
 
    //console.log("accessToken :",accessToken);
- 
+  console.log("leaving Auth middleware")
    next();
 } 
 

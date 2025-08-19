@@ -11,4 +11,5 @@ const mongoDBConnect = async () => {
          process.exit(1);
    }
 }
+
 module.exports = { mongoDBConnect }
